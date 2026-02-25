@@ -14,3 +14,12 @@ class LoadTickets extends TicketEvent {
 class RefreshTickets extends TicketEvent {
   const RefreshTickets();
 }
+
+class SearchTickets extends TicketEvent {
+  final String query;
+
+  const SearchTickets({required this.query});
+
+  @override
+  List<Object?> get props => [query];
+}

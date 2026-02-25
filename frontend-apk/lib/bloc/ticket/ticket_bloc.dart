@@ -9,6 +9,7 @@ class TicketBloc extends Bloc<TicketEvent, TicketState> {
   TicketBloc({required this.ticketRepository}) : super(TicketInitial()) {
     on<LoadTickets>(_onLoadTickets);
     on<RefreshTickets>(_onRefreshTickets);
+    on<SearchTickets>(_onSearchTickets);
   }
 
   Future<void> _onLoadTickets(
@@ -38,6 +39,19 @@ class TicketBloc extends Bloc<TicketEvent, TicketState> {
     emit(TicketLoading());
     try {
       final tickets = await ticketRepository.getTickets();
+      emit(TicketLoaded(tickets: tickets));
+    } catch (e) {
+      emit(TicketError(message: e.toString()));
+    }
+  }
+
+  Future<void> _onSearchTickets(
+    SearchTickets event,
+    Emitter<TicketState> emit,
+  ) async {
+    emit(TicketLoading());
+    try {
+      final tickets = await ticketRepository.searchTickets(event.query);
       emit(TicketLoaded(tickets: tickets));
     } catch (e) {
       emit(TicketError(message: e.toString()));

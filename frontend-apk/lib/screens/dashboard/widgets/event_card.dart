@@ -123,7 +123,11 @@ class EventCard extends StatelessWidget {
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        // Action for ticket detail
+                        Navigator.pushNamed(
+                          context,
+                          '/ticket-detail',
+                          arguments: ticket,
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         shape: RoundedRectangleBorder(

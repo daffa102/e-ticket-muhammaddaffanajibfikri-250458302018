@@ -17,6 +17,14 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
@@ -39,45 +47,88 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ],
         ),
-        body: BlocBuilder<TicketBloc, TicketState>(
-          builder: (context, state) {
-            if (state is TicketLoading) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (state is TicketLoaded) {
-              if (state.tickets.isEmpty) {
-                return const Center(child: Text('No tickets available.'));
-              }
-              return RefreshIndicator(
-                onRefresh: () async {
-                  context.read<TicketBloc>().add(const LoadTickets());
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Search tickets...',
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.clear),
+                    onPressed: () {
+                      _searchController.clear();
+                      context.read<TicketBloc>().add(const LoadTickets());
+                    },
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onChanged: (value) {
+                  context.read<TicketBloc>().add(SearchTickets(query: value));
                 },
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: state.tickets.length,
-                  itemBuilder: (context, index) {
-                    final ticket = state.tickets[index];
-                    return EventCard(ticket: ticket);
-                  },
-                ),
-              );
-            } else if (state is TicketError) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('Error: ${state.message}'),
-                    ElevatedButton(
-                      onPressed: () {
-                        context.read<TicketBloc>().add(const LoadTickets());
+              ),
+            ),
+            Expanded(
+              child: BlocBuilder<TicketBloc, TicketState>(
+                builder: (context, state) {
+                  if (state is TicketLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (state is TicketLoaded) {
+                    if (state.tickets.isEmpty) {
+                      return const Center(child: Text('No tickets found.'));
+                    }
+                    return RefreshIndicator(
+                      onRefresh: () async {
+                        if (_searchController.text.isEmpty) {
+                          context.read<TicketBloc>().add(const LoadTickets());
+                        } else {
+                          context.read<TicketBloc>().add(
+                            SearchTickets(query: _searchController.text),
+                          );
+                        }
                       },
-                      child: const Text('Try Again'),
-                    ),
-                  ],
-                ),
-              );
-            }
-            return const Center(child: Text('Welcome!'));
-          },
+                      child: ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: state.tickets.length,
+                        itemBuilder: (context, index) {
+                          final ticket = state.tickets[index];
+                          return EventCard(ticket: ticket);
+                        },
+                      ),
+                    );
+                  } else if (state is TicketError) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('Error: ${state.message}'),
+                          ElevatedButton(
+                            onPressed: () {
+                              if (_searchController.text.isEmpty) {
+                                context.read<TicketBloc>().add(
+                                  const LoadTickets(),
+                                );
+                              } else {
+                                context.read<TicketBloc>().add(
+                                  SearchTickets(query: _searchController.text),
+                                );
+                              }
+                            },
+                            child: const Text('Try Again'),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  return const Center(child: Text('Welcome!'));
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
