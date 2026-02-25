@@ -9,6 +9,7 @@ import 'package:e_ticket/bloc/auth_event.dart';
 import 'package:e_ticket/bloc/ticket/ticket_bloc.dart';
 import 'package:e_ticket/bloc/ticket/ticket_event.dart';
 import 'package:e_ticket/repositories/ticket_repositories.dart';
+import 'package:e_ticket/screens/dashboard/ticket_event_detail.dart';
 
 void main() {
   runApp(const ETicketingApp());
@@ -78,6 +79,7 @@ class ETicketingApp extends StatelessWidget {
             '/login': (context) => const LoginScreen(),
             '/register': (context) => const RegisterScreen(),
             '/dashboard': (context) => const DashboardScreen(),
+            '/ticket-detail': (context) => const TicketDetailScreen(),
           },
         ),
       ),
